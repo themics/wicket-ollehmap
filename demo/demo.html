@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8" />
+	<title>wicket-ollehmap</title>
+	<script src="../lib/ollehmap-all-desktop-plugin-min.js"></script>
+	<script src="../lib/wicket.js"></script>
+	<script src="../wicket-ollehmap.src.js"></script>
+	<script>
+	var map, feature = null;
+	
+	function setOptions(overlay) {
+	  if (overlay instanceof olleh.maps.overlay.Marker) {
+	    overlay.setOptions({
+	      draggable: true
+	    });
+	  } else {
+	    overlay.setOptions({
+	      strokeWeight: 2,
+	      editable: true
+	    });
+	    if (overlay instanceof olleh.maps.vector.Polygon) {
+	      overlay.setOptions({
+	        fillColor: '#6CF',
+	        fillOpacity: 0.5
+	      });
+	    }
+	  }
+	  
+	  return overlay;
+	}
+	
+	function setMap(feature, map) {
+	  var i;
+	  if (olleh.maps.isArray(feature)) {
+	    for (i = 0; i < feature.length; i++) {
+	      setOptions(feature[i]).setMap(map);
+	    }
+	  } else {
+	    setOptions(feature).setMap(map);
+	  }
+	}
+	
+	window.onload = function () {
+	  var textarea = document.getElementById('wkt');
+	  map = new olleh.maps.Map(document.getElementById('map'), {
+	    center: new olleh.maps.UTMK(953200, 1950800),
+	    zoom: 8
+	  });
+	  
+	  feature = new olleh.maps.vector.Circle({
+	    center: new olleh.maps.UTMK(953200, 1950800),
+	    radius: 1000
+	  });
+	  setMap(feature, map);
+	  
+	  document.getElementById('presets').onclick = function (e) {
+	    if (e.target.tagName == 'BUTTON') {
+	      textarea.value = e.target.value;
+	    }
+	  };
+	  
+	  document.getElementById('construct').onclick = function () {
+	    var wkt;
+
+	    if (feature) {
+	      setMap(feature, null);
+	    }
+	    
+	    wkt = new Wkt.Wkt();
+	    wkt.read(textarea.value);
+	    feature = wkt.toObject();
+	    
+	    setMap(feature, map);
+	  };
+	  
+	  document.getElementById('deconstruct').onclick = function () {
+	    var wkt;
+	    
+	    if (!feature) {
+	      return;
+	    }
+	    
+	    wkt = new Wkt.Wkt();
+	    wkt.fromObject(feature);
+	    
+	    textarea.value = wkt.write();
+	  };
+	  
+	  document.getElementById('clearMap').onclick = function () {
+	    if (feature) {
+	      setMap(feature, null);
+	      feature = null;
+	    }
+	  };
+	  
+	  document.getElementById('clearWkt').onclick = function () {
+	    textarea.value = '';
+	  };
+	}
+	</script>
+	<style>
+html, body {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+.partition {
+	float: left;
+	width: 50%;
+	height: 100%;
+}
+#wkt {
+	display: block;
+	width: 80%;
+	height: 50%;
+}
+	</style>
+</head>
+<body>
+	<div id="map" class="partition"></div>
+	<div class="partition">
+		<div id="presets">
+			<button value="POINT (953200 1950800)">Point</button>
+			<button value="LINESTRING (952400 1950000, 953000 1951600, 954000 1951000)">Linestring</button>
+			<button value="POLYGON ((952400 1950000, 953000 1951600, 954000 1951000))">Polygon (1 ring)</button>
+			<button value="POLYGON ((952400 1950000, 953000 1951600, 954000 1951000), (952000 1951000, 952300 1949800, 953600 1950200, 954400 1951000, 954000 1952000, 953000 1952200))">Polygon (2 rings)</button>
+			<button value="BOX ((952400 1950000), (954000 1951600))">Box</button>
+			<button value="MULTIPOINT ((952400 1950000), (953000 1951600), (954000 1951000))">MultiPoint</button>
+			<button value="MULTILINESTRING ((952400 1950000, 953000 1951600, 954000 1951000), (952000 1951000, 952300 1949800, 953600 1950200, 954400 1951000, 954000 1952000, 953000 1952200))">MultiLinestring</button>
+			<button value="MULTIPOLYGON (((952400 1950000, 953000 1951600, 954000 1951000)), ((952000 1951000, 952300 1949800, 953600 1950200, 954400 1951000, 954000 1952000, 953000 1952200)))">MultiPolygon</button>
+		</div>
+		<textarea id="wkt">POINT (953200 1950800)</textarea>
+		<button id="clearMap">clear map</button>
+		<button id="clearWkt">clear wkt</button>
+		<button id="construct">construct</button>
+		<button id="deconstruct">deconstruct</button>
+	</div>
+</body>
+</html>
