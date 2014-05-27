@@ -17,6 +17,7 @@
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 (function () {
+  
   /**
    * @augments Wkt.Wkt The default CRS of coordinates.
    */
@@ -26,6 +27,12 @@
    * @augments Wkt.Wkt The number of segments used to approximate a circle.
    */
   Wkt.Wkt.prototype.numSeg = 32;
+
+
+
+  ////////////////////////////////////////
+  // Construct
+  ////////////////////////////////////////
 
   function constructPath(c) {
     var i, l, arr = [];
@@ -144,7 +151,13 @@
 
   };
 
-  function pathAsArray (path) {
+
+
+  ////////////////////////////////////////
+  // Deconstruct
+  ////////////////////////////////////////
+
+  function pathAsArray(path) {
     var i, l, arr = [];
     for (i = 0, l = path.getLength(); i < l; i++) {
       arr.push(path.getAt(i).xy());
@@ -152,21 +165,21 @@
     return arr;
   }
 
-  function deconstructPoint (coord) {
+  function deconstructPoint(coord) {
     return {
       type: 'point',
       components: [ coord.xy() ]
     };
   }
 
-  function deconstructLinestring (path) {
+  function deconstructLinestring(path) {
     return {
       type: 'linestring',
       components: pathAsArray(path),
     };
   }
 
-  function deconstructPolygon (paths) {
+  function deconstructPolygon(paths) {
     var i, l, arr = [];
     for (i = 0, l = paths.length; i < l; i++) {
       arr.push(pathAsArray(paths[i]));
@@ -177,7 +190,7 @@
     };
   }
 
-  function deconstructRectangle (bounds) {
+  function deconstructRectangle(bounds) {
     var path = new olleh.maps.Path([
         bounds.leftBottom,
         bounds.getRightBottomCoord(),
@@ -191,7 +204,7 @@
     };
   }
 
-  function deconstructCircle (center, radius, numSeg) {
+  function deconstructCircle(center, radius, numSeg) {
     var n, theta, arr = [];
 
     for (n = 0; n < numSeg; n++) {
@@ -208,7 +221,7 @@
     };
   }
 
-  function deconstructMultigeometry (obj) {
+  function deconstructMultigeometry(obj) {
     var i, l, arr = [], feature, type = null;
     for (i = 0, l = obj.length; i < l; i++) {
       feature = this.deconstruct.call(this, obj[i]);
